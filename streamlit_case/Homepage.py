@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     names = ['wangquanjun'] # 用户名
     usernames = ['wangquanjun', '']  # 登录名
-    passwords = ['wm8766130']
+    passwords = ['*']
 
     hashed_passwords = stauth.Hasher(passwords).generate()
 
