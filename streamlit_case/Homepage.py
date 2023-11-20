@@ -39,9 +39,9 @@ def main():
 
 if __name__ == '__main__':
 
-    names = ['wangquanjun'] # 用户名
-    usernames = ['wangquanjun', '']  # 登录名
-    passwords = ['*']
+    names = ['admin'] # 用户名
+    usernames = ['admin', '']  # 登录名
+    passwords = ['123456']
 
     hashed_passwords = stauth.Hasher(passwords).generate()
 
