@@ -1,3 +1,0 @@
-pip install streamlit_authenticator
-pip install streamlit
-pip install streamlit_chat

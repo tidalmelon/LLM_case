@@ -40,7 +40,7 @@ def main():
 if __name__ == '__main__':
 
     names = ['admin'] # 用户名
-    usernames = ['admin', '']  # 登录名
+    usernames = ['admin']  # 登录名
     passwords = ['123456']
 
     hashed_passwords = stauth.Hasher(passwords).generate()
@@ -54,16 +54,19 @@ if __name__ == '__main__':
     authenticator = stauth.Authenticate(credentials, 'some_cookie_name', 'some_signature_key', cookie_expiry_days=0)
     name, authentication_status, username = authenticator.login('Login', 'main')
 
-    if authentication_status:  # 登录成功
+
+
+    if st.session_state['authentication_status']:
+        # login success
+        authenticator.logout('Logout', 'main', key='unique_key')
+        st.write(f'Welcome *{st.session_state["name"]}*')
         main()
-    elif authentication_status == False:  #登录失败
+    elif st.session_state['authentication_status'] == False:
+        # login failed
         st.error('Username/password is incorrect')
-    elif authentication_status == None:  #未输入登录信息
+    elif st.session_state['authentication_status'] == None:
+        # 登录该连接的时候,啥也不动,提示输入密码
         st.warning('Please enter your username and password')
-
-
-
-
 
 
 
