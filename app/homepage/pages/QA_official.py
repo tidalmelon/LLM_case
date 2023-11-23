@@ -1,27 +1,22 @@
 import streamlit as st
-from streamlit_chatbox import ChatBox, FakeLLM, Markdown
-import time
+from streamlit_chatbox import ChatBox, Markdown
+
+from transformers import AutoModel, AutoTokenizer
 
 
 
-#class FakeLLM:
-#    def _answer(self, query: str) -> str:
-#        answer = f" \n\n{query}"  # 这里什么都不写
-#        docs = ["reference 1", "reference 2", "reference 3"]
-#        return answer, docs
-#
-#    def chat(self, query: str) -> str:
-#        return self._answer(query)
-#
-#    def chat_stream(self, query: str):
-#        text, docs = self._answer(query)
-#        for t in text:
-#            yield t, docs
-#            time.sleep(0.1)
 
 
+@st.cache_resource
+def load_llm():
+    path = '/root/.cache/huggingface/hub/THUDM/chatglm2-6b-32k'
+    tokenizer = AutoTokenizer.from_pretrained(path, trust_remote_code=True)
+    llm = AutoModel.from_pretrained(path, trust_remote_code=True).quantize(8).half().cuda()
+    return tokenizer, llm
 
-llm = FakeLLM()
+
+tokenizer, llm = load_llm()
+
 chat_box  = ChatBox()
 
 # 官网给出根据column可以放置到右边. 可以参考chatchat
@@ -38,8 +33,16 @@ chat_box.output_messages()
 
 if query := st.chat_input('input your question here'):
     chat_box.user_say(query)
-    if streaming:
-        generator = llm.chat_stream(query)
+    #if streaming:
+    if True:
+        # history is setted to []
+        generator = llm.stream_chat(tokenizer, 
+                                    query, 
+                                    history=[],
+                                    max_length=10000,
+                                    temperature=0.01,
+                                    top_p=0.4,
+                                    top_k=10)
         elements = chat_box.ai_say(
                 [
                     Markdown("", 
@@ -51,26 +54,11 @@ if query := st.chat_input('input your question here'):
                 ]
         )
 
-        time.sleep(1)
-
-        text = ""
-
-        for x, docs in generator:
-            text += x
+        for text, history in generator:
             chat_box.update_msg(text, element_index=0, streaming=True)
 
         # update the element without focus
         chat_box.update_msg(text, element_index=0, streaming=False, state="complete")
-    else:
-        text, docs = llm.chat(query)
-        chat_box.ai_say(
-            [
-                Markdown(text, in_expander=in_expander,
-                         expanded=True, title="answer"),
-                Markdown("\n\n".join(docs), in_expander=in_expander,
-                         title="references"),
-            ]
-        )
 
 
 
